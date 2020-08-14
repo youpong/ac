@@ -1,22 +1,18 @@
-CC = clang
-CFLAGS = -g -Wall -std=c18
+TARGET = ac
 
-TARGET = step2
-OBJS =
-
-.PHONY: all clean check run
+.PHONY: all clean check 
 
 all: $(TARGET)
 
 clean:
-	- rm -f a.out a.s *.o $(TARGET) test asrun
+	- rm -f a.out a.s $(TARGET) test asrun
 
 check: all test
 	./test
 
-$(TARGET): $(OBJS)
+$(TARGET): main.go
+	go build -o $@ main.go
 
-run:
-	go run main.go
-step2: asrun
-	go run main.go |./asrun
+step2: $(TARGET) asrun
+	echo -n 2 | ./$(TARGET) |./asrun
+	rm a.s a.out
