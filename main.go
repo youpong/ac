@@ -81,8 +81,10 @@ func tokenize() []*Token {
 }
 
 type Expr struct {
-	kind string // "intliteral"
+	kind string // "intliteral", "unary"
 	intval int
+	operator string // "+" "-"
+	operand *Expr
 }
 
 var tokens []*Token
@@ -109,6 +111,12 @@ func parse() *Expr {
 			kind: "intliteral",
 			intval: number,
 		}
+	case "punct":
+		return &Expr{
+			kind: "unary",
+			operator: token.value,
+			operand: parse(),
+		}
 	default:
 		panic("Unexpected token.kind")
 	}
@@ -118,6 +126,13 @@ func generateExpr(expr *Expr) {
 	switch expr.kind {
 	case "intliteral":
 		fmt.Printf("\tmov $%d, %%rax\n", expr.intval)
+	case "unary":
+		switch expr.operator {
+		case "+":
+			fmt.Printf("\tmov $%d, %%rax\n", expr.operand.intval)
+		case "-":
+			fmt.Printf("\tmov $-%d, %%rax\n", expr.operand.intval)
+		}
 	default:
 		panic("Unexpected expr.kind")
 	}
