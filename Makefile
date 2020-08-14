@@ -15,3 +15,6 @@ check: all test
 	./test
 
 $(TARGET): $(OBJS)
+
+step0: asrun
+	cat 42.asm | ./asrun

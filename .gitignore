@@ -1,4 +1,7 @@
+asrun
 test
+a.out
+a.s
 *.o
 *~
 \#*#
