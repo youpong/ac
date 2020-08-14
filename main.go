@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"errors"
+	"strconv"
 )
 
 type Token struct {
@@ -79,7 +80,56 @@ func tokenize() []*Token {
 	return tokens
 }
 
+type Expr struct {
+	kind string // "intliteral"
+	intval int
+}
+
+var tokens []*Token
+var tokenIndex = 0
+
+func getToken() *Token {
+	if tokenIndex == len(tokens) {
+		return nil
+	}
+	token := tokens[tokenIndex]
+	tokenIndex++
+	return token
+}
+
+func parse() *Expr {
+	token := getToken()
+	switch token.kind {
+	case "intliteral":
+		number , err := strconv.Atoi(token.value)
+		if err != nil {
+			panic(err)
+		}
+		return &Expr{
+			kind: "intliteral",
+			intval: number,
+		}
+	default:
+		panic("Unexpected token.kind")
+	}
+}
+
+func generateExpr(expr *Expr) {
+	switch expr.kind {
+	case "intliteral":
+		fmt.Printf("\tmov $%d, %%rax\n", expr.intval)
+	default:
+		panic("Unexpected expr.kind")
+	}
+}
+
 func main() {
 	source , _ = ioutil.ReadFile("/dev/stdin")
-	tokenize()
+	tokens = tokenize()
+	expr := parse()
+	
+	fmt.Printf("\t.globl main\n")
+	fmt.Printf("main:\n")
+	generateExpr(expr)
+	fmt.Printf("\tret\n")
 }

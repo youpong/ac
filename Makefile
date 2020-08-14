@@ -13,6 +13,6 @@ check: all test
 $(TARGET): main.go
 	go build -o $@ main.go
 
-step3: $(TARGET) asrun
-	echo ' 2 + 3 ; ' | ./$(TARGET)
+step5: $(TARGET) asrun
+	echo ' 40 ; ' | ./$(TARGET) | ./asrun
 
