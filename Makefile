@@ -1,10 +1,10 @@
 CC = clang
 CFLAGS = -g -Wall -std=c18
 
-TARGET = step1
+TARGET = step2
 OBJS =
 
-.PHONY: all clean format check
+.PHONY: all clean check run
 
 all: $(TARGET)
 
@@ -16,5 +16,7 @@ check: all test
 
 $(TARGET): $(OBJS)
 
-step1: asrun
+run:
+	go run main.go
+step2: asrun
 	go run main.go |./asrun
