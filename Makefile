@@ -12,7 +12,3 @@ check: all test
 
 $(TARGET): main.go
 	go build -o $@ main.go
-
-step6: $(TARGET) asrun
-	echo ' -1 ; ' | ./$(TARGET) | ./asrun
-

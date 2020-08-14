@@ -54,7 +54,7 @@ func tokenize() []*Token {
 			break
 		}
 		switch char {
-		case ' ', '\n':
+		case ' ', '\t', '\n':
 			continue
 		case '0','1','2','3','4','5','6','7','8','9':
 			number := readNumber(char)
@@ -81,10 +81,12 @@ func tokenize() []*Token {
 }
 
 type Expr struct {
-	kind string // "intliteral", "unary"
+	kind string // "intliteral", "unary", "binary"
 	intval int
 	operator string // "+" "-"
 	operand *Expr
+	left *Expr
+	right *Expr
 }
 
 var tokens []*Token
@@ -99,7 +101,7 @@ func getToken() *Token {
 	return token
 }
 
-func parse() *Expr {
+func parseUnaryExpr() *Expr {
 	token := getToken()
 	switch token.kind {
 	case "intliteral":
@@ -115,12 +117,32 @@ func parse() *Expr {
 		return &Expr{
 			kind: "unary",
 			operator: token.value,
-			operand: parse(),
+			operand: parseUnaryExpr(),
 		}
 	default:
 		panic("Unexpected token.kind")
 	}
 }
+
+func parse() *Expr {
+	expr := parseUnaryExpr()
+	token := getToken()
+	if token == nil || token.value == ";" {
+		return expr;
+	}
+	switch token.value {
+	case "+", "-":
+		return &Expr{
+			kind: "binary",
+			operator: token.value,
+			left: expr,
+			right: parseUnaryExpr(),
+		}
+	default:
+		panic("Unexpected token.value");
+	}
+}
+
 
 func generateExpr(expr *Expr) {
 	switch expr.kind {
@@ -132,6 +154,17 @@ func generateExpr(expr *Expr) {
 			fmt.Printf("\tmov $%d, %%rax\n", expr.operand.intval)
 		case "-":
 			fmt.Printf("\tmov $-%d, %%rax\n", expr.operand.intval)
+		}
+	case "binary":
+		switch expr.operator {
+		case "+":
+			fmt.Printf("\tmov $%d, %%rax\n", expr.left.intval)
+			fmt.Printf("\tmov $%d, %%rcx\n", expr.right.intval)
+			fmt.Printf("\tadd %%rcx, %%rax\n")
+		case "-":
+			fmt.Printf("\tmov $%d, %%rax\n", expr.left.intval)
+			fmt.Printf("\tmov $%d, %%rcx\n", expr.right.intval)
+			fmt.Printf("\tsub %%rcx, %%rax\n")
 		}
 	default:
 		panic("Unexpected expr.kind")
